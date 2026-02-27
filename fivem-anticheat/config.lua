@@ -28,6 +28,7 @@ Config.Modules = {
     player_attach_detect    = true,  -- Görünmez yapışma (ghost attach) tespiti
     vehicle_spawn_detect    = true,  -- Yetkisiz araç spawn tespiti
     vehicle_mod_detect      = true,  -- Yetkisiz araç tuning tespiti
+    teleport_detect         = true,  -- Teleport (TP) tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -575,4 +576,84 @@ Config.VehicleModDetect = {
     -- Standalone sunucular için false yapın
     -- --------------------------------------------------------
     RequireFramework = false,
+}
+
+-- ============================================================
+--  Teleport (TP) Tespiti (teleport_detect modülü) v1.0.0
+--
+--  Cheat: Oyuncunun haritada işaretlediği noktaya anında
+--  ışınlanması (SetEntityCoords ile teleport)
+--
+--  Tespit yöntemi:
+--    1. Waypoint (harita işareti) konumunu izle
+--    2. Oyuncunun konumunu periyodik kaydet
+--    3. Fiziksel olarak imkansız hızda hareket → TP
+--    4. Waypoint'e TP = kesin hile
+--    5. Waypoint'e olmayan hızlı hareket = sadece log (asansör olabilir)
+--
+--  False positive koruması:
+--    - Waypoint kontrolü (en önemli!)
+--    - Yolcu kontrolü (şoför TP yapmış olabilir)
+--    - Attach kontrolü (carry script)
+--    - Güvenli bölgeler (asansör, garaj, hastane)
+--    - 2D mesafe (Z hariç — asansör false positive önleme)
+--    - Admin bypass
+-- ============================================================
+Config.TeleportDetect = {
+
+    -- --------------------------------------------------------
+    -- Kontrol aralığı (milisaniye)
+    -- Oyuncunun konumu bu aralıkta kaydedilir
+    -- 500ms = saniyede 2 kontrol
+    -- Daha düşük = daha hassas ama daha fazla kaynak
+    -- --------------------------------------------------------
+    CheckIntervalMs = 500,
+
+    -- --------------------------------------------------------
+    -- Minimum TP mesafesi (metre)
+    -- Bu mesafeden kısa TP'ler filtrelenir
+    -- 100m = kısa mesafe TP'ler (asansör, interior) yakalanmaz
+    -- --------------------------------------------------------
+    MinTPDistance = 100.0,
+
+    -- --------------------------------------------------------
+    -- Maksimum seyahat süresi (milisaniye)
+    -- Bu süreden kısa sürede MinTPDistance'dan fazla mesafe
+    -- kat edilirse → teleport
+    -- 2000ms = 2 saniye
+    -- --------------------------------------------------------
+    MaxTravelTimeMs = 2000,
+
+    -- --------------------------------------------------------
+    -- Waypoint yakınlık yarıçapı (metre)
+    -- Oyuncu waypoint'e bu kadar yakınsa "ulaştı" sayılır
+    -- 50m = GPS hassasiyeti (waypoint tam noktaya düşmeyebilir)
+    -- --------------------------------------------------------
+    WaypointRadius = 50.0,
+
+    -- --------------------------------------------------------
+    -- Rapor bekleme süresi (milisaniye)
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    CooldownMs = 60000,
+
+    -- --------------------------------------------------------
+    -- Maksimum meşru hız (metre/saniye)
+    -- Bu hızın üzerinde hareket → fiziksel olarak imkansız
+    -- 100 m/s = 360 km/h (en hızlı araç bile bu hıza zor ulaşır)
+    -- Daha düşük = daha hassas ama daha fazla false positive
+    -- --------------------------------------------------------
+    MaxSpeedMps = 100.0,
+
+    -- --------------------------------------------------------
+    -- Güvenli bölgeler
+    -- Bu bölgelere TP yapılırsa tespit yapılmaz
+    -- Asansör çıkışları, garaj spawn noktaları, hastane vb.
+    -- Format: { x, y, z, radius, label }
+    -- --------------------------------------------------------
+    SafeZones = {
+        -- { x = 0.0, y = 0.0, z = 0.0, radius = 50.0, label = "Örnek Asansör" },
+        -- { x = 340.0, y = -580.0, z = 74.0, radius = 30.0, label = "Pillbox Hastane" },
+        -- { x = -1105.0, y = -843.0, z = 37.0, radius = 50.0, label = "Garaj" },
+    },
 }
