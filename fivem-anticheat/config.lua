@@ -173,7 +173,7 @@ Config.WeaponCheck = {
 }
 
 -- ============================================================
---  Sınırsız Mermi Tespiti (infinite_ammo_check modülü)
+--  Sınırsız Mermi Tespiti (infinite_ammo_check modülü) v1.3.0
 -- ============================================================
 Config.AmmoCheck = {
 
@@ -185,12 +185,20 @@ Config.AmmoCheck = {
     MaxAmmo = 250,
 
     -- --------------------------------------------------------
+    -- Maksimum şarjör kapasitesi
+    -- Bir şarjör (reload) en fazla bu kadar mermi artırabilir
+    -- Bu değerin üzerinde tek seferlik artış → kesin hile
+    -- Oyundaki en büyük şarjör ~50 mermidir
+    -- --------------------------------------------------------
+    MaxMagazineSize = 50,
+
+    -- --------------------------------------------------------
     -- Şüpheli artış eşiği
     -- Tek seferde bu kadar veya daha fazla mermi artışı
     -- tespit edilirse → strike sayılır
-    -- Düşük tutarsanız reload animasyonu false positive verebilir
+    -- MaxMagazineSize'dan küçük olmalı (reload toleransı)
     -- --------------------------------------------------------
-    SuspiciousIncrease = 50,
+    SuspiciousIncrease = 30,
 
     -- --------------------------------------------------------
     -- Maksimum strike sayısı
@@ -205,6 +213,16 @@ Config.AmmoCheck = {
     -- 30000 = 30 saniye
     -- --------------------------------------------------------
     StrikeResetMs = 30000,
+
+    -- --------------------------------------------------------
+    -- Sabit mermi (stale ammo) tespit eşiği
+    -- Oyuncu ateş ediyor ama mermi düşmüyorsa, bu kadar
+    -- kontrol döngüsünden sonra şüpheli sayılır
+    -- Kontrol aralığı 5 saniye → 3 = 15 saniye boyunca
+    -- ateş edip mermi düşmezse → şüpheli
+    -- NOT: Bu durum sadece loglanır, ban atılmaz!
+    -- --------------------------------------------------------
+    StaleAmmoThreshold = 3,
 
     -- --------------------------------------------------------
     -- Görmezden gelinecek silahlar

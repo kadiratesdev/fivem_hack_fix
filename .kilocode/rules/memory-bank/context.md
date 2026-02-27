@@ -18,6 +18,7 @@ The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. I
 - [x] FiveM anticheat: refactored to use client-side ox_inventory exports
 - [x] FiveM anticheat: switched to GetPlayerItems() for efficiency
 - [x] FiveM anticheat: infinite ammo detection module (v1.2.0)
+- [x] FiveM anticheat: v1.3.0 - magazine limit (50), stale ammo detection, confiscate instead of ban
 
 ## Current Structure
 
