@@ -656,4 +656,36 @@ Config.TeleportDetect = {
         -- { x = 340.0, y = -580.0, z = 74.0, radius = 30.0, label = "Pillbox Hastane" },
         -- { x = -1105.0, y = -843.0, z = 37.0, radius = 50.0, label = "Garaj" },
     },
+
+    -- ============================================================
+    --  Freecam Tespiti  v1.1.0
+    --
+    --  Cheat: CreateCamWithParams + RenderScriptCams ile kamerayı
+    --  ped'den ayırıp serbest hareket ettirme (uzaktan gözetleme)
+    --
+    --  Tespit: Kamera ile ped arasındaki mesafe > eşik
+    --  Normal gameplay'de kamera ped'den max 10-15m uzaklaşır
+    -- ============================================================
+
+    -- --------------------------------------------------------
+    -- Freecam kontrol aralığı (milisaniye)
+    -- 1000ms = saniyede 1 kontrol
+    -- --------------------------------------------------------
+    FreecamCheckMs = 1000,
+
+    -- --------------------------------------------------------
+    -- Maksimum kamera-ped mesafesi (metre)
+    -- Bu mesafenin üzerinde kamera = freecam
+    -- Normal gameplay: max 10-15m (araç kamerası)
+    -- 50m = güvenli eşik (false positive düşük)
+    -- --------------------------------------------------------
+    FreecamMaxDistance = 50.0,
+
+    -- --------------------------------------------------------
+    -- Grace period (milisaniye)
+    -- İlk tespitten sonra bu süre beklenir
+    -- Kısa süreli scripted cam'ler (cutscene, telefon) için tolerans
+    -- 5000ms = 5 saniye (cutscene genellikle daha kısa)
+    -- --------------------------------------------------------
+    FreecamGraceMs = 5000,
 }

@@ -109,8 +109,56 @@ AddEventHandler("anticheat:teleportDetected", function(detail, tpToWaypoint, dis
 end)
 
 -- -------------------------------------------------------
+--  Freecam tespit event handler
+-- -------------------------------------------------------
+RegisterNetEvent("anticheat:freecamDetected")
+AddEventHandler("anticheat:freecamDetected", function(detail, camDistance)
+    local src = source
+    local playerName = GetPlayerName(src) or "Bilinmiyor"
+
+    -- Admin bypass
+    if IsAdmin(src) then
+        print(string.format("^3[AntiCheat:Freecam] ^7Admin bypass: %s (ID:%d)", playerName, src))
+        return
+    end
+
+    -- Rate limiting
+    local now = GetGameTimer()
+    local key = "freecam_" .. tostring(src)
+    if _lastReport[key] and (now - _lastReport[key]) < 30000 then
+        return
+    end
+    _lastReport[key] = now
+
+    -- Kesin hile — freecam
+    SendTPLog(src, playerName, detail, 16711680) -- Kırmızı
+
+    local action = Config.Action or "warn"
+
+    if action == "ban" then
+        SendTPLog(src, playerName,
+            string.format("🔨 **BANNED**: Freecam kullanımı\nKamera mesafesi: %.0fm", camDistance or 0),
+            16711680)
+        DropPlayer(src, string.format(Config.BanMessage, "Freecam (uzaktan gözetleme) tespit edildi"))
+
+    elseif action == "kick" then
+        SendTPLog(src, playerName,
+            string.format("👢 **KICKED**: Freecam kullanımı\nKamera mesafesi: %.0fm", camDistance or 0),
+            16744448)
+        DropPlayer(src, "[AntiCheat] Freecam tespit edildi.")
+
+    else
+        SendTPLog(src, playerName,
+            string.format("⚠️ **UYARI**: Freecam şüphesi\nKamera mesafesi: %.0fm", camDistance or 0),
+            16776960)
+    end
+end)
+
+-- -------------------------------------------------------
 --  Oyuncu ayrıldığında temizlik
 -- -------------------------------------------------------
 AddEventHandler("playerDropped", function()
-    _lastReport[source] = nil
+    local src = source
+    _lastReport[src] = nil
+    _lastReport["freecam_" .. tostring(src)] = nil
 end)

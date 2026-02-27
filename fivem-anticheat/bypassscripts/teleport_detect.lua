@@ -1,5 +1,5 @@
 -- ============================================================
---  AntiCheat - Teleport (TP) Tespiti  v1.0.0
+--  AntiCheat - Teleport (TP) + Freecam Tespiti  v1.1.0
 --
 --  Tespit hedefi: Oyuncunun haritada işaretlediği noktaya
 --  anında ışınlanması (teleport hack / noclip TP)
@@ -263,6 +263,91 @@ Citizen.CreateThread(function()
         -- Konum güncelle
         lastCoords = currentCoords
         lastCoordsTime = now
+
+        ::continue::
+    end
+end)
+
+-- ============================================================
+--  Tespit 2: Freecam Tespiti  v1.1.0
+--
+--  Cheat: CreateCamWithParams + RenderScriptCams ile kamerayı
+--  ped'den ayırıp serbest hareket ettirme
+--
+--  Tespit: Kamera ile ped arasındaki mesafe > eşik
+--
+--  Normal gameplay'de kamera ped'den max 10-15m uzaklaşır
+--  (araç kamerası, helikopter vb.)
+--  50m eşik = güvenli (false positive düşük)
+--
+--  Meşru scripted cam kullanımları:
+--    - Cutscene (kısa süreli)
+--    - Telefon kamerası (yakın mesafe)
+--    - Araç kamerası (max ~15m)
+--    - Admin freecam → ace bypass
+-- ============================================================
+
+local FREECAM_CHECK_MS     = cfg.FreecamCheckMs or 1000
+local FREECAM_MAX_DISTANCE = cfg.FreecamMaxDistance or 50.0
+local FREECAM_GRACE_MS     = cfg.FreecamGraceMs or 5000  -- İlk tespitten sonra bekleme
+local freecamDetectTime    = 0
+local freecamReportCooldown = 0
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(FREECAM_CHECK_MS)
+
+        local ped = PlayerPedId()
+        if not DoesEntityExist(ped) or IsEntityDead(ped) then
+            freecamDetectTime = 0
+            goto continue
+        end
+
+        -- Gameplay kamerası aktif mi?
+        -- Eğer scripted cam aktifse, gameplay cam rendering false olur
+        local isGameplayCam = IsGameplayCamRendering()
+
+        if not isGameplayCam then
+            -- Scripted cam aktif — kamera ile ped mesafesini kontrol et
+            local camCoords = GetFinalRenderedCamCoord()
+            local pedCoords = GetEntityCoords(ped)
+            local camDist = #(camCoords - pedCoords)
+
+            if camDist > FREECAM_MAX_DISTANCE then
+                -- Kamera ped'den çok uzak!
+                local now = GetGameTimer()
+
+                if freecamDetectTime == 0 then
+                    -- İlk tespit — grace period başlat
+                    freecamDetectTime = now
+                elseif (now - freecamDetectTime) > FREECAM_GRACE_MS then
+                    -- Grace period doldu — kesin freecam
+                    if (now - freecamReportCooldown) > COOLDOWN_MS then
+                        freecamReportCooldown = now
+                        freecamDetectTime = 0
+
+                        local detail = string.format(
+                            "📷 FREECAM TESPİTİ!\n" ..
+                            "Kamera-Ped mesafesi: %.1fm (eşik: %.0fm)\n" ..
+                            "Kamera: %.1f, %.1f, %.1f\n" ..
+                            "Ped: %.1f, %.1f, %.1f\n" ..
+                            "Scripted cam: EVET | Gameplay cam: HAYIR",
+                            camDist, FREECAM_MAX_DISTANCE,
+                            camCoords.x, camCoords.y, camCoords.z,
+                            pedCoords.x, pedCoords.y, pedCoords.z
+                        )
+
+                        TriggerServerEvent("anticheat:freecamDetected", detail, camDist)
+                    end
+                end
+            else
+                -- Mesafe normal — sıfırla
+                freecamDetectTime = 0
+            end
+        else
+            -- Gameplay cam aktif — freecam yok
+            freecamDetectTime = 0
+        end
 
         ::continue::
     end
