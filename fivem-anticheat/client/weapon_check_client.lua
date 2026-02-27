@@ -1,16 +1,9 @@
 -- ============================================================
---  AntiCheat - Silah Zorla Kaldırma (Client Side)
---  Sunucudan gelen komutla oyuncunun elindeki silahı kaldırır
+--  AntiCheat - Silah Kontrolü (Client Side)
+--
+--  NOT: Silah tespiti ve kaldırma işlemi artık doğrudan
+--  weapon_inventory_check.lua bypass modülünde yapılır.
+--  (exports.ox_inventory:Search client export kullanılır)
+--
+--  Bu dosya ileride ek client-side handler'lar için ayrılmıştır.
 -- ============================================================
-
-RegisterNetEvent("anticheat:forceRemoveWeapon")
-AddEventHandler("anticheat:forceRemoveWeapon", function(weaponHash)
-    local ped = PlayerPedId()
-    if DoesEntityExist(ped) then
-        RemoveWeaponFromPed(ped, weaponHash)
-        -- Bildirim göster
-        SetNotificationTextEntry("STRING")
-        AddTextComponentString("~r~[AntiCheat] ~w~Yetkisiz silah tespit edildi ve kaldırıldı.")
-        DrawNotification(false, true)
-    end
-end)

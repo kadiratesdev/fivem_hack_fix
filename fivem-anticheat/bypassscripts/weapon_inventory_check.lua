@@ -1,16 +1,16 @@
 -- ============================================================
 --  AntiCheat Modülü: weapon_inventory_check
---  ox_inventory entegrasyonu ile silah tespiti
+--  ox_inventory client export ile silah tespiti
 --
 --  Mantık:
 --    1. Oyuncunun elindeki silahı al (GetSelectedPedWeapon)
---    2. ox_inventory'den oyuncunun envanterini sorgula
---    3. Eğer eldeki silah envanterde yoksa → silahı al + ban
+--    2. exports.ox_inventory:Search('count', weaponName) ile
+--       envanterde kaç adet olduğunu doğrudan client'ta sorgula
+--    3. Eğer count == 0 → silahı al + sunucuya ban/kick bildir
 --
 --  İstisnalar:
 --    - Config.WeaponCheck.IgnoredWeapons listesindeki silahlar görmezden gelinir
---      (paintball, etkinlik silahları vb.)
---    - Config.WeaponCheck.IgnoredZones içindeki koordinat bölgelerinde kontrol çalışmaz
+--    - Config.WeaponCheck.IgnoredZones içindeki bölgelerde kontrol çalışmaz
 -- ============================================================
 
 RegisterACModule("weapon_inventory_check", function()
@@ -28,18 +28,17 @@ RegisterACModule("weapon_inventory_check", function()
         return
     end
 
-    -- Silah hash'ini string'e çevir (ox_inventory item adı için)
+    -- Silah hash'ini item adına çevir (WeaponHashMap üzerinden)
     local weaponName = nil
-    for name, hash in pairs(cfg.WeaponHashMap) do
+    for name, _ in pairs(cfg.WeaponHashMap) do
         if GetHashKey(name) == currentWeapon then
             weaponName = string.lower(name)
             break
         end
     end
 
-    -- Hash map'te bulunamadıysa GetWeaponName ile dene
+    -- Hash map'te bulunamadıysa → bilinmeyen silah, şüpheli
     if not weaponName then
-        -- Bilinmeyen silah hash'i → şüpheli, raporla
         ReportDetection("weapon_inventory_check",
             string.format("Bilinmeyen silah hash tespit edildi: %s", tostring(currentWeapon)))
         return
@@ -61,6 +60,20 @@ RegisterACModule("weapon_inventory_check", function()
         end
     end
 
-    -- ox_inventory'den envanter kontrolü (server-side callback)
-    TriggerServerEvent("anticheat:checkWeaponInventory", weaponName, currentWeapon)
+    -- ✅ ox_inventory client export ile doğrudan envanter kontrolü
+    -- Sunucuya gerek yok, client'ta anında sonuç alınır
+    local count = exports.ox_inventory:Search('count', weaponName)
+
+    if count and count > 0 then
+        -- Silah envanterde mevcut, sorun yok
+        return
+    end
+
+    -- Silah envanterde YOK ama elde var → hile!
+    -- Önce silahı client'ta zorla kaldır
+    RemoveWeaponFromPed(ped, currentWeapon)
+
+    -- Sunucuya bildir (ban/kick/warn için)
+    local reason = string.format("Envanterde olmayan silah: %s", weaponName)
+    TriggerServerEvent("anticheat:weaponCheatDetected", weaponName, currentWeapon, reason)
 end)
