@@ -21,7 +21,8 @@ Config.Action = "ban"
 
 -- Hangi bypass modülleri aktif?
 Config.Modules = {
-    hulkfix   = true,
+    hulkfix          = true,
+    entity_grab      = true,  -- 7XCheat / MachoInject entity grab tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
