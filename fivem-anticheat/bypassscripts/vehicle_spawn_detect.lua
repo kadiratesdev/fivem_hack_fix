@@ -1,5 +1,5 @@
 -- ============================================================
---  AntiCheat - Yetkisiz Araç Spawn Tespiti  v1.0.0
+--  AntiCheat - Yetkisiz Araç Spawn Tespiti  v1.1.0
 --
 --  Tespit hedefi: Client-side CreateVehicle ile yetkisiz
 --  araç oluşturma (MachoInject, 7XCheat, vb.)
@@ -241,6 +241,101 @@ Citizen.CreateThread(function()
             )
         elseif currentVehicle == 0 then
             lastVehicle = 0
+        end
+
+        ::continue::
+    end
+end)
+
+-- ============================================================
+--  Tespit 3: Şoförsüz Hızlı Araç (Vehicle Projectile) v1.1.0
+--
+--  Cheat: CreateVehicle + SetEntityVelocity ile araçları
+--  mermi gibi fırlatma. İmzalar:
+--    - Şoförsüz araç (sürücü koltuğu boş)
+--    - Yüksek hız (normal trafik hızının çok üstünde)
+--    - Havada olma (yere temas etmiyor)
+--    - Oyuncunun yakınında spawn
+--
+--  Aksiyon: Tespit edilen araçlar otomatik silinir + log
+-- ============================================================
+
+local PROJECTILE_CHECK_MS    = cfg.ProjectileCheckMs or 500
+local PROJECTILE_SPEED_THRESHOLD = cfg.ProjectileSpeedThreshold or 50.0  -- m/s (~180 km/h)
+local PROJECTILE_RADIUS      = cfg.ProjectileRadius or 50.0
+local PROJECTILE_AUTO_DELETE  = cfg.ProjectileAutoDelete ~= false  -- Varsayılan: true
+local projectileReportCooldown = 0
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(PROJECTILE_CHECK_MS)
+
+        local ped = PlayerPedId()
+        if not DoesEntityExist(ped) or IsEntityDead(ped) then
+            goto continue
+        end
+
+        local playerCoords = GetEntityCoords(ped)
+        local vehicles = GetGamePool('CVehicle')
+        local deletedCount = 0
+        local detectedList = {}
+
+        for _, vehicle in ipairs(vehicles) do
+            if DoesEntityExist(vehicle) then
+                -- Mesafe kontrolü
+                local vehCoords = GetEntityCoords(vehicle)
+                local dist = #(playerCoords - vehCoords)
+
+                if dist <= PROJECTILE_RADIUS then
+                    -- Sürücü var mı?
+                    local driver = GetPedInVehicleSeat(vehicle, -1)
+                    local hasDriver = driver and driver ~= 0
+
+                    if not hasDriver then
+                        -- Hız kontrolü
+                        local velocity = GetEntityVelocity(vehicle)
+                        local speed = #(velocity) -- m/s
+
+                        if speed > PROJECTILE_SPEED_THRESHOLD then
+                            -- Şoförsüz + yüksek hız = araç mermisi!
+                            local info = GetVehicleInfo(vehicle)
+
+                            detectedList[#detectedList + 1] = string.format(
+                                "%s [%s] hız:%.0f m/s (%.0f km/h) mesafe:%.1fm",
+                                info.displayName,
+                                info.plate,
+                                speed,
+                                speed * 3.6,
+                                dist
+                            )
+
+                            -- Otomatik silme
+                            if PROJECTILE_AUTO_DELETE then
+                                SetEntityAsMissionEntity(vehicle, false, true)
+                                DeleteEntity(vehicle)
+                                deletedCount = deletedCount + 1
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Tespit varsa sunucuya bildir
+        if #detectedList > 0 then
+            local now = GetGameTimer()
+            if (now - projectileReportCooldown) > 10000 then -- 10sn cooldown
+                projectileReportCooldown = now
+
+                local detail = string.format(
+                    "🚀 Araç mermisi tespiti! %d şoförsüz hızlı araç%s:\n%s",
+                    #detectedList,
+                    deletedCount > 0 and string.format(" (%d silindi)", deletedCount) or "",
+                    table.concat(detectedList, "\n")
+                )
+
+                TriggerServerEvent("anticheat:vehicleSpawnDetected", detail)
+            end
         end
 
         ::continue::

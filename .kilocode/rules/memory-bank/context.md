@@ -23,6 +23,7 @@ The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. I
 - [x] FiveM anticheat: v1.1.0 aimbot_detect - adaptive loop optimization (idle=1000ms, armed=100ms, aiming=0ms)
 - [x] FiveM anticheat: v1.5.0 - ghost attach detection module (invisible attach, carry whitelist, admin bypass)
 - [x] FiveM anticheat: v1.6.0 - unauthorized vehicle spawn detection (whitelist API, rapid spawn, network validation)
+- [x] FiveM anticheat: v1.1.0 vehicle_spawn_detect - driverless vehicle projectile detection + auto-delete
 
 ## Current Structure
 

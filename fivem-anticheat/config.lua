@@ -467,4 +467,41 @@ Config.VehicleSpawnDetect = {
     -- Client eşiğinden yüksek (sunucu daha güvenilir)
     -- --------------------------------------------------------
     MaxSpawnsServer = 5,
+
+    -- ============================================================
+    --  Araç Mermisi / Şoförsüz Hızlı Araç Tespiti  v1.1.0
+    --
+    --  Cheat: CreateVehicle + SetEntityVelocity ile araçları
+    --  mermi gibi fırlatma (vehicle launcher / vehicle gun)
+    -- ============================================================
+
+    -- --------------------------------------------------------
+    -- Kontrol aralığı (milisaniye)
+    -- Şoförsüz hızlı araçlar bu aralıkta taranır
+    -- 500ms = saniyede 2 kontrol (hızlı tepki gerekli)
+    -- --------------------------------------------------------
+    ProjectileCheckMs = 500,
+
+    -- --------------------------------------------------------
+    -- Hız eşiği (metre/saniye)
+    -- Şoförsüz araç bu hızın üzerindeyse → araç mermisi
+    -- 50 m/s = 180 km/h (şoförsüz araç bu hıza ulaşamaz)
+    -- Normal trafik: ~15-30 m/s, park halinde: 0
+    -- --------------------------------------------------------
+    ProjectileSpeedThreshold = 50.0,
+
+    -- --------------------------------------------------------
+    -- Tarama yarıçapı (metre)
+    -- Bu mesafe içindeki şoförsüz araçlar kontrol edilir
+    -- 50m = geniş alan (fırlatılan araçlar hızla uzaklaşır)
+    -- --------------------------------------------------------
+    ProjectileRadius = 50.0,
+
+    -- --------------------------------------------------------
+    -- Otomatik silme
+    -- true = tespit edilen araç mermileri otomatik silinir
+    -- false = sadece log, silme yapılmaz
+    -- ÖNERİ: true (araç mermileri oyuncuları öldürebilir)
+    -- --------------------------------------------------------
+    ProjectileAutoDelete = true,
 }
