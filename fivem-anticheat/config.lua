@@ -237,17 +237,31 @@ Config.AmmoCheck = {
 }
 
 -- ============================================================
---  Aimbot / Silent Aim Tespiti (aimbot_detect modülü) v1.0.0
+--  Aimbot / Silent Aim Tespiti (aimbot_detect modülü) v1.1.0
 -- ============================================================
 Config.AimbotDetect = {
 
     -- --------------------------------------------------------
+    -- Yavaş döngü aralığı (milisaniye)
+    -- Oyuncunun elinde ateşli silah YOKKEN kullanılır
+    -- Kaynak tasarrufu sağlar — silah yoksa sık kontrol gereksiz
+    -- 1000ms = saniyede 1 kontrol
+    -- --------------------------------------------------------
+    IdleLoopMs = 1000,
+
+    -- --------------------------------------------------------
     -- Hızlı döngü aralığı (milisaniye)
-    -- Ateş anlarını yakalamak için daha sık kontrol gerekir
+    -- Oyuncunun elinde ateşli silah VARKEN ama nişan ALMIYORKEN
     -- 100ms = saniyede 10 kontrol
-    -- Düşük değer = daha hassas tespit, daha fazla CPU
     -- --------------------------------------------------------
     FastLoopMs = 100,
+
+    -- --------------------------------------------------------
+    -- Nişan alma döngüsü
+    -- Oyuncu aktif olarak nişan alıyorken → Wait(0)
+    -- Her frame kontrol edilir — maksimum hassasiyet
+    -- Bu ayar config'den değiştirilemez (sabit Wait(0))
+    -- --------------------------------------------------------
 
     -- --------------------------------------------------------
     -- Headshot oranı eşiği

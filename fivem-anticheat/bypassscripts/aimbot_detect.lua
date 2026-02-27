@@ -1,5 +1,5 @@
 -- ============================================================
---  AntiCheat Module: Aimbot Detection  v1.0.0
+--  AntiCheat Module: Aimbot Detection  v1.1.0
 --
 --  Tespit edilen hile türleri:
 --    1. ShootSingleBulletBetweenCoords kullanımı (silent aim)
@@ -9,7 +9,10 @@
 --
 --  Çalışma mantığı:
 --    - Ana döngü (ACModules) her 5 saniyede istatistik toplar
---    - Ayrı bir hızlı döngü (100ms) ateş anlarını yakalar
+--    - Adaptif hızlı döngü:
+--        * Silah yok       → Wait(1000ms) — kaynak tasarrufu
+--        * Silah var        → Wait(100ms)  — normal izleme
+--        * Nişan alıyor     → Wait(0)      — her frame yakalama
 --    - Belirli eşikler aşılırsa sunucuya rapor gönderir
 -- ============================================================
 
@@ -263,8 +266,11 @@ local function trackShotAccuracy()
 end
 
 -- -------------------------------------------------------
---  Hızlı döngü: Ateş anlarını yakalamak için
---  (Ana döngü 5 saniye, bu 100ms aralıkla çalışır)
+--  Adaptif hızlı döngü: Duruma göre hız ayarı
+--
+--  Silah yok       → Wait(IdleLoopMs)    — kaynak tasarrufu
+--  Silah var        → Wait(FastLoopMs)    — normal izleme
+--  Nişan alıyor     → Wait(0)            — her frame yakalama
 -- -------------------------------------------------------
 Citizen.CreateThread(function()
     -- Config yüklenene kadar bekle
@@ -280,15 +286,30 @@ Citizen.CreateThread(function()
     cfg = Config.AimbotDetect
     _stats.sessionStart = GetGameTimer()
 
-    while true do
-        Citizen.Wait(cfg.FastLoopMs or 100)
+    local idleMs = cfg.IdleLoopMs or 1000
+    local fastMs = cfg.FastLoopMs or 100
 
+    while true do
         local ped = PlayerPedId()
+
+        -- Ped yoksa veya ölüyse yavaş döngü
         if not DoesEntityExist(ped) or IsEntityDead(ped) then
+            Citizen.Wait(idleMs)
             goto continue
         end
 
-        -- Ateş hızı kontrolü (hızlı döngüde olmalı)
+        local weapon = GetSelectedPedWeapon(ped)
+
+        -- Silah yoksa (yumruk / silahsız) → yavaş döngü
+        if not isFirearm(weapon) then
+            Citizen.Wait(idleMs)
+            goto continue
+        end
+
+        -- Silah var — nişan alıyor mu kontrol et
+        local isAiming = IsPlayerFreeAiming(PlayerId())
+
+        -- Ateş hızı kontrolü
         checkFireRate()
 
         -- Ateş isabet takibi
@@ -296,6 +317,13 @@ Citizen.CreateThread(function()
 
         -- Snap aiming kontrolü
         checkSnapAiming()
+
+        -- Nişan alıyorsa → Wait(0) her frame, değilse → Wait(FastLoopMs)
+        if isAiming then
+            Citizen.Wait(0)
+        else
+            Citizen.Wait(fastMs)
+        end
 
         ::continue::
     end
