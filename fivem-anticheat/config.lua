@@ -26,6 +26,7 @@ Config.Modules = {
     infinite_ammo_check     = true,  -- Sınırsız mermi (infinite ammo) tespiti
     aimbot_detect           = true,  -- Aimbot / Silent Aim tespiti
     player_attach_detect    = true,  -- Görünmez yapışma (ghost attach) tespiti
+    vehicle_spawn_detect    = true,  -- Yetkisiz araç spawn tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -398,4 +399,72 @@ Config.PlayerAttachDetect = {
     -- ExtraCarryAnims = {
     --     { dict = "custom_carry", anim = "carry_idle" },
     -- },
+}
+
+-- ============================================================
+--  Yetkisiz Araç Spawn Tespiti (vehicle_spawn_detect modülü) v1.0.0
+--
+--  Cheat: Client-side CreateVehicle ile yetkisiz araç oluşturma
+--  (MachoInject, 7XCheat vb. menülerden araç spawn)
+--
+--  Tespit yöntemi:
+--    1. Oyuncunun yakınında yeni oluşan araçları izle
+--    2. Sunucu whitelist sistemi ile doğrula
+--    3. Hızlı spawn tespiti (kısa sürede çok araç)
+--    4. Network dışı araç tespiti (client-only spawn)
+--
+--  Whitelist entegrasyonu:
+--    Garaj/dealer/admin scriptlerinizde araç spawn ettikten sonra:
+--    TriggerEvent("anticheat:authorizeVehicle", source, netId, "garage")
+-- ============================================================
+Config.VehicleSpawnDetect = {
+
+    -- --------------------------------------------------------
+    -- Client kontrol aralığı (milisaniye)
+    -- Yakındaki yeni araçlar bu aralıkta taranır
+    -- 2000ms = 2 saniyede bir
+    -- --------------------------------------------------------
+    CheckIntervalMs = 2000,
+
+    -- --------------------------------------------------------
+    -- Spawn tespit yarıçapı (metre)
+    -- Oyuncunun bu mesafe içinde oluşan araçlar izlenir
+    -- 10.0m = yakın çevre (çok uzak araçlar filtrelenir)
+    -- --------------------------------------------------------
+    SpawnRadius = 10.0,
+
+    -- --------------------------------------------------------
+    -- Client tarafı: Hızlı spawn eşiği
+    -- Bu kadar araç kısa sürede spawn olursa → rapor
+    -- --------------------------------------------------------
+    MaxSpawnsInWindow = 3,
+
+    -- --------------------------------------------------------
+    -- Client tarafı: Hızlı spawn penceresi (milisaniye)
+    -- Bu süre içindeki spawn sayısı kontrol edilir
+    -- 30000 = 30 saniye
+    -- --------------------------------------------------------
+    SpawnWindowMs = 30000,
+
+    -- --------------------------------------------------------
+    -- Client tarafı: Rapor bekleme süresi (milisaniye)
+    -- Bir rapor gönderildikten sonra bu süre boyunca
+    -- yeni rapor gönderilmez
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    CooldownMs = 60000,
+
+    -- --------------------------------------------------------
+    -- Sunucu tarafı: Whitelist kaydı süresi (milisaniye)
+    -- Meşru araç spawn kaydı bu süre sonra silinir
+    -- 30000 = 30 saniye (spawn sonrası yeterli süre)
+    -- --------------------------------------------------------
+    AuthExpireMs = 30000,
+
+    -- --------------------------------------------------------
+    -- Sunucu tarafı: Hızlı spawn eşiği
+    -- Sunucu tarafında bu kadar yetkisiz spawn → aksiyon
+    -- Client eşiğinden yüksek (sunucu daha güvenilir)
+    -- --------------------------------------------------------
+    MaxSpawnsServer = 5,
 }

@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'AntiCheat System'
 description 'Modular FiveM AntiCheat - Bypass Script Detector'
-version '1.5.0'
+version '1.6.0'
 
 -- Shared config
 shared_scripts {
@@ -17,6 +17,7 @@ server_scripts {
     'server/ammo_check_server.lua',    -- Sınırsız mermi tespiti
     'server/aimbot_detect_server.lua',          -- Aimbot / Silent Aim tespiti
     'server/player_attach_detect_server.lua',   -- Görünmez yapışma tespiti
+    'server/vehicle_spawn_detect_server.lua',   -- Yetkisiz araç spawn tespiti
 }
 
 -- Client-side scripts
