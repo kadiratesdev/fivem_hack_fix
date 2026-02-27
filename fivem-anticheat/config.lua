@@ -23,6 +23,7 @@ Config.Action = "ban"
 Config.Modules = {
     entity_grab             = true,  -- 7XCheat / MachoInject entity grab tespiti
     weapon_inventory_check  = true,  -- ox_inventory silah envanter kontrolü
+    infinite_ammo_check     = true,  -- Sınırsız mermi (infinite ammo) tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -168,5 +169,50 @@ Config.WeaponCheck = {
         ["WEAPON_STONE_HATCHET"]        = true,
         -- Özel / Etkinlik (IgnoredWeapons ile birlikte kullanın)
         ["WEAPON_PAINTBALL"]            = true,
+    },
+}
+
+-- ============================================================
+--  Sınırsız Mermi Tespiti (infinite_ammo_check modülü)
+-- ============================================================
+Config.AmmoCheck = {
+
+    -- --------------------------------------------------------
+    -- Maksimum mermi eşiği
+    -- Bu sayının üzerinde mermi tespit edilirse → kesin hile
+    -- Normal oyunda en yüksek mermi kapasitesi ~250 civarıdır
+    -- --------------------------------------------------------
+    MaxAmmo = 250,
+
+    -- --------------------------------------------------------
+    -- Şüpheli artış eşiği
+    -- Tek seferde bu kadar veya daha fazla mermi artışı
+    -- tespit edilirse → strike sayılır
+    -- Düşük tutarsanız reload animasyonu false positive verebilir
+    -- --------------------------------------------------------
+    SuspiciousIncrease = 50,
+
+    -- --------------------------------------------------------
+    -- Maksimum strike sayısı
+    -- Bu kadar şüpheli artış tespit edilirse → hile onayı
+    -- Daha yüksek = daha az false positive, daha geç tespit
+    -- --------------------------------------------------------
+    MaxStrikes = 3,
+
+    -- --------------------------------------------------------
+    -- Strike sıfırlama süresi (milisaniye)
+    -- Bu süre içinde yeni strike gelmezse sayaç sıfırlanır
+    -- 30000 = 30 saniye
+    -- --------------------------------------------------------
+    StrikeResetMs = 30000,
+
+    -- --------------------------------------------------------
+    -- Görmezden gelinecek silahlar
+    -- Bu silahlar için mermi kontrolü yapılmaz
+    -- Örnek: sınırsız mermili etkinlik silahları
+    -- --------------------------------------------------------
+    IgnoredWeapons = {
+        -- "weapon_paintball",
+        -- "weapon_stungun",
     },
 }
