@@ -25,6 +25,7 @@ Config.Modules = {
     weapon_inventory_check  = true,  -- ox_inventory silah envanter kontrolü
     infinite_ammo_check     = true,  -- Sınırsız mermi (infinite ammo) tespiti
     aimbot_detect           = true,  -- Aimbot / Silent Aim tespiti
+    player_attach_detect    = true,  -- Görünmez yapışma (ghost attach) tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -346,4 +347,55 @@ Config.AimbotDetect = {
     -- 300000 = 5 dakika
     -- --------------------------------------------------------
     StatResetIntervalMs = 300000,
+}
+
+-- ============================================================
+--  Görünmez Yapışma Tespiti (player_attach_detect modülü) v1.0.0
+--
+--  Cheat: Oyuncu başka bir oyuncuya AttachEntityToEntity ile
+--  yapışır, kendini görünmez yapar (SetEntityVisible false)
+--  ve çarpışmayı kapatır (SetEntityCollision false).
+--  "Ghost attach" / "invisible follow" olarak bilinir.
+--
+--  False positive koruması:
+--    - Taşıma scriptleri (carry/piggyback) whitelist animasyonları
+--    - Admin bypass: "anticheat.bypass" ace permission
+--    - Araç içindeyken kontrol yapılmaz
+--    - Threshold sistemi: tek seferlik tespit yetmez
+-- ============================================================
+Config.PlayerAttachDetect = {
+
+    -- --------------------------------------------------------
+    -- Kontrol aralığı (milisaniye)
+    -- Her bu kadar sürede bir oyuncunun durumu kontrol edilir
+    -- 1000ms = saniyede 1 kontrol
+    -- --------------------------------------------------------
+    CheckIntervalMs = 1000,
+
+    -- --------------------------------------------------------
+    -- Tespit eşiği
+    -- Bu kadar üst üste şüpheli durum tespit edilirse
+    -- sunucuya rapor gönderilir
+    -- Görünmez + attach = 2 puan/kontrol → 2 kontrolde eşik
+    -- Sadece attach (görünür) = 1 puan/kontrol → 3 kontrolde eşik
+    -- --------------------------------------------------------
+    DetectionThreshold = 3,
+
+    -- --------------------------------------------------------
+    -- Rapor bekleme süresi (milisaniye)
+    -- Bir rapor gönderildikten sonra bu süre boyunca
+    -- yeni rapor gönderilmez (spam önleme)
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    CooldownMs = 60000,
+
+    -- --------------------------------------------------------
+    -- Ek whitelist animasyonları
+    -- Sunucunuzdaki özel taşıma scriptleri varsa
+    -- buraya ekleyebilirsiniz (client tarafında da var)
+    -- Format: { dict = "anim_dict", anim = "anim_name" }
+    -- --------------------------------------------------------
+    -- ExtraCarryAnims = {
+    --     { dict = "custom_carry", anim = "carry_idle" },
+    -- },
 }

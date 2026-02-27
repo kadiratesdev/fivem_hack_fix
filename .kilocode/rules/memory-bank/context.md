@@ -21,6 +21,7 @@ The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. I
 - [x] FiveM anticheat: v1.3.0 - magazine limit (50), stale ammo detection, confiscate instead of ban
 - [x] FiveM anticheat: v1.4.0 - aimbot/silent aim detection module (headshot ratio, snap aiming, rapid fire)
 - [x] FiveM anticheat: v1.1.0 aimbot_detect - adaptive loop optimization (idle=1000ms, armed=100ms, aiming=0ms)
+- [x] FiveM anticheat: v1.5.0 - ghost attach detection module (invisible attach, carry whitelist, admin bypass)
 
 ## Current Structure
 
