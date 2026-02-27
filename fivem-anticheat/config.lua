@@ -27,6 +27,7 @@ Config.Modules = {
     aimbot_detect           = true,  -- Aimbot / Silent Aim tespiti
     player_attach_detect    = true,  -- Görünmez yapışma (ghost attach) tespiti
     vehicle_spawn_detect    = true,  -- Yetkisiz araç spawn tespiti
+    vehicle_mod_detect      = true,  -- Yetkisiz araç tuning tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -513,4 +514,65 @@ Config.VehicleSpawnDetect = {
     -- ÖNERİ: true (araç mermileri oyuncuları öldürebilir)
     -- --------------------------------------------------------
     ProjectileAutoDelete = true,
+}
+
+-- ============================================================
+--  Yetkisiz Araç Tuning Tespiti (vehicle_mod_detect modülü) v1.0.0
+--
+--  Cheat: Client-side SetVehicleMod ile tüm modları max'a
+--  çıkarma (max tuning, cam filmi, patlak lastik koruması)
+--
+--  Tespit yöntemi (Before/After):
+--    1. Araca binildiğinde tüm mod değerleri kaydedilir (snapshot)
+--    2. Periyodik olarak mevcut modlar kontrol edilir
+--    3. Eşik aşılırsa sunucuya bildirilir
+--    4. Sunucu: meslek + admin kontrolü
+--    5. Yetkisiz ise → araç sil + ban/kick
+--
+--  Framework desteği: ESX, QBCore, Standalone
+-- ============================================================
+Config.VehicleModDetect = {
+
+    -- --------------------------------------------------------
+    -- Kontrol aralığı (milisaniye)
+    -- Araçtaki mod değişiklikleri bu aralıkta kontrol edilir
+    -- 3000ms = 3 saniyede bir (çok sık olursa performans etkiler)
+    -- --------------------------------------------------------
+    CheckIntervalMs = 3000,
+
+    -- --------------------------------------------------------
+    -- Mod değişiklik eşiği
+    -- Tek seferde bu kadar veya daha fazla mod değişirse → şüpheli
+    -- Max tuning cheat'i 50 mod'u aynı anda değiştirir
+    -- Normal mekanik: 1-2 mod aynı anda
+    -- 5 = güvenli eşik (false positive düşük)
+    -- --------------------------------------------------------
+    ModChangeThreshold = 5,
+
+    -- --------------------------------------------------------
+    -- Rapor bekleme süresi (milisaniye)
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    CooldownMs = 60000,
+
+    -- --------------------------------------------------------
+    -- İzin verilen meslekler
+    -- Bu mesleklerdeki oyuncular araç tuning yapabilir
+    -- ESX/QBCore job.name değerleri kullanılır
+    -- --------------------------------------------------------
+    AllowedJobs = {
+        "mechanic",     -- Mekanik
+        "tuner",        -- Tuning uzmanı
+        "bennys",       -- Benny's çalışanı
+        -- "police",    -- Polis (araç modifikasyonu gerekiyorsa)
+        -- "cardealer",  -- Araç satıcısı
+    },
+
+    -- --------------------------------------------------------
+    -- Framework zorunlu mu?
+    -- true  = ESX/QBCore bulunamazsa → meslek kontrolü başarısız → aksiyon al
+    -- false = Framework yoksa meslek kontrolü atlanır (sadece admin kontrolü)
+    -- Standalone sunucular için false yapın
+    -- --------------------------------------------------------
+    RequireFramework = false,
 }
