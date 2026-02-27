@@ -28,7 +28,8 @@ Config.Modules = {
     player_attach_detect    = true,  -- Görünmez yapışma (ghost attach) tespiti
     vehicle_spawn_detect    = true,  -- Yetkisiz araç spawn tespiti
     vehicle_mod_detect      = true,  -- Yetkisiz araç tuning tespiti
-    teleport_detect         = true,  -- Teleport (TP) tespiti
+    teleport_detect         = true,  -- Teleport (TP) + Freecam tespiti
+    speedhack_detect        = true,  -- Speedhack (hız hilesi) tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -688,4 +689,64 @@ Config.TeleportDetect = {
     -- 5000ms = 5 saniye (cutscene genellikle daha kısa)
     -- --------------------------------------------------------
     FreecamGraceMs = 5000,
+}
+
+-- ============================================================
+--  Speedhack Tespiti (speedhack_detect modülü) v1.0.0
+--
+--  Cheat: SetRunSprintMultiplierForPlayer ve SetPedMoveRateOverride
+--  ile oyuncunun hareket hızını artırma (3x, 10x fast run)
+--
+--  Tespit yöntemi:
+--    1. Oyuncunun gerçek hızını mesafe/süre ile ölç
+--    2. Yaya/araç hız limitini aşıyorsa → strike
+--    3. Tekrarlayan ihlaller → ban
+--
+--  Normal hızlar: Yürüme ~1.5 m/s | Koşma ~5.5 | Sprint ~7.5
+--  Cheat hızları: 3x = ~22 m/s | 10x = ~75 m/s
+-- ============================================================
+Config.SpeedhackDetect = {
+
+    -- --------------------------------------------------------
+    -- Kontrol aralığı (milisaniye)
+    -- Hız ölçümü bu aralıkta yapılır
+    -- 1000ms = saniyede 1 ölçüm
+    -- --------------------------------------------------------
+    CheckIntervalMs = 1000,
+
+    -- --------------------------------------------------------
+    -- Yaya maksimum hız (metre/saniye)
+    -- Bu hızın üzerinde yaya hareketi → şüpheli
+    -- Normal sprint: ~7.5 m/s
+    -- 15 m/s = 2x sprint hızı (güvenli eşik)
+    -- --------------------------------------------------------
+    MaxFootSpeed = 15.0,
+
+    -- --------------------------------------------------------
+    -- Araç maksimum hız (metre/saniye)
+    -- Bu hızın üzerinde araç hareketi → şüpheli
+    -- En hızlı süper araç: ~80 m/s (~288 km/h)
+    -- 100 m/s = 360 km/h (güvenli eşik)
+    -- --------------------------------------------------------
+    MaxVehicleSpeed = 100.0,
+
+    -- --------------------------------------------------------
+    -- Strike sistemi: Maksimum strike
+    -- Bu kadar üst üste hız ihlali → ban
+    -- 5 = 5 saniye boyunca sürekli hız ihlali
+    -- --------------------------------------------------------
+    MaxStrikes = 5,
+
+    -- --------------------------------------------------------
+    -- Strike azalma süresi (milisaniye)
+    -- Bu sürede 1 strike düşer
+    -- 30000 = 30 saniye
+    -- --------------------------------------------------------
+    StrikeDecayMs = 30000,
+
+    -- --------------------------------------------------------
+    -- Rapor bekleme süresi (milisaniye)
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    CooldownMs = 60000,
 }

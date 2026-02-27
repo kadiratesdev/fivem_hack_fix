@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'AntiCheat System'
 description 'Modular FiveM AntiCheat - Bypass Script Detector'
-version '1.8.0'
+version '1.9.0'
 
 -- Shared config
 shared_scripts {
@@ -19,7 +19,8 @@ server_scripts {
     'server/player_attach_detect_server.lua',   -- Görünmez yapışma tespiti
     'server/vehicle_spawn_detect_server.lua',   -- Yetkisiz araç spawn tespiti
     'server/vehicle_mod_detect_server.lua',     -- Yetkisiz araç tuning tespiti
-    'server/teleport_detect_server.lua',        -- Teleport (TP) tespiti
+    'server/teleport_detect_server.lua',        -- Teleport (TP) + Freecam tespiti
+    'server/speedhack_detect_server.lua',       -- Speedhack tespiti
 }
 
 -- Client-side scripts

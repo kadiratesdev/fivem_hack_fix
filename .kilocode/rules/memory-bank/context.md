@@ -26,6 +26,8 @@ The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. I
 - [x] FiveM anticheat: v1.1.0 vehicle_spawn_detect - driverless vehicle projectile detection + auto-delete
 - [x] FiveM anticheat: v1.7.0 - unauthorized vehicle mod detection (before/after snapshot, job whitelist, ESX/QBCore)
 - [x] FiveM anticheat: v1.8.0 - teleport detection (waypoint tracking, 2D distance, safe zones, passenger/attach checks)
+- [x] FiveM anticheat: v1.1.0 teleport_detect - freecam detection (camera-ped distance, grace period)
+- [x] FiveM anticheat: v1.9.0 - speedhack detection (distance/time speed measurement, strike system, ragdoll filter)
 
 ## Current Structure
 
