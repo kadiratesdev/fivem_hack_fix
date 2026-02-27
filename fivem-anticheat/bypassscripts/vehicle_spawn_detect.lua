@@ -30,6 +30,7 @@ local SPAWN_RADIUS         = cfg.SpawnRadius or 10.0
 local MAX_SPAWNS_WINDOW    = cfg.MaxSpawnsInWindow or 3
 local SPAWN_WINDOW_MS      = cfg.SpawnWindowMs or 30000
 local COOLDOWN_MS          = cfg.CooldownMs or 60000
+local NPC_DRIVERS_DISABLED = cfg.NPCDriversDisabled or false  -- NPC sürücüler kapalı mı?
 
 -- -------------------------------------------------------
 --  State
@@ -134,7 +135,13 @@ Citizen.CreateThread(function()
 
                     -- NPC aracı mı?
                     if IsNPCVehicle(vehicle) then
-                        goto nextVehicle
+                        if NPC_DRIVERS_DISABLED then
+                            -- NPC sürücüler kapalı sunucuda NPC sürücülü araç = şüpheli
+                            -- Silme işlemi projectile thread'inde yapılır
+                        else
+                            -- Normal sunucu: NPC trafik araçlarını atla
+                            goto nextVehicle
+                        end
                     end
 
                     -- Mesafe kontrolü
@@ -287,34 +294,85 @@ Citizen.CreateThread(function()
                 local dist = #(playerCoords - vehCoords)
 
                 if dist <= PROJECTILE_RADIUS then
-                    -- Sürücü var mı?
+                    -- Sürücü kontrolü
                     local driver = GetPedInVehicleSeat(vehicle, -1)
                     local hasDriver = driver and driver ~= 0
+                    local hasNPCDriver = hasDriver and not IsPedAPlayer(driver)
 
-                    if not hasDriver then
-                        -- Hız kontrolü
-                        local velocity = GetEntityVelocity(vehicle)
-                        local speed = #(velocity) -- m/s
+                    -- Hız kontrolü
+                    local velocity = GetEntityVelocity(vehicle)
+                    local speed = #(velocity) -- m/s
 
-                        if speed > PROJECTILE_SPEED_THRESHOLD then
-                            -- Şoförsüz + yüksek hız = araç mermisi!
-                            local info = GetVehicleInfo(vehicle)
+                    -- -----------------------------------------------
+                    --  Durum 1: Şoförsüz + yüksek hız = araç mermisi
+                    -- -----------------------------------------------
+                    if not hasDriver and speed > PROJECTILE_SPEED_THRESHOLD then
+                        local info = GetVehicleInfo(vehicle)
 
-                            detectedList[#detectedList + 1] = string.format(
-                                "%s [%s] hız:%.0f m/s (%.0f km/h) mesafe:%.1fm",
-                                info.displayName,
-                                info.plate,
-                                speed,
-                                speed * 3.6,
-                                dist
-                            )
+                        detectedList[#detectedList + 1] = string.format(
+                            "%s [%s] hız:%.0f m/s (%.0f km/h) mesafe:%.1fm [ŞOFÖRSÜZ]",
+                            info.displayName,
+                            info.plate,
+                            speed,
+                            speed * 3.6,
+                            dist
+                        )
 
-                            -- Otomatik silme
-                            if PROJECTILE_AUTO_DELETE then
-                                SetEntityAsMissionEntity(vehicle, false, true)
-                                DeleteEntity(vehicle)
-                                deletedCount = deletedCount + 1
-                            end
+                        -- Otomatik silme
+                        if PROJECTILE_AUTO_DELETE then
+                            SetEntityAsMissionEntity(vehicle, false, true)
+                            DeleteEntity(vehicle)
+                            deletedCount = deletedCount + 1
+                        end
+
+                    -- -----------------------------------------------
+                    --  Durum 2: NPC sürücüler kapalı sunucuda
+                    --  NPC sürücülü araç = sahte NPC, hile imzası
+                    --  NPC'yi sil + aracı sil
+                    -- -----------------------------------------------
+                    elseif NPC_DRIVERS_DISABLED and hasNPCDriver then
+                        local info = GetVehicleInfo(vehicle)
+
+                        detectedList[#detectedList + 1] = string.format(
+                            "%s [%s] hız:%.0f m/s mesafe:%.1fm [SAHTE NPC SÜRÜCÜ]",
+                            info.displayName,
+                            info.plate,
+                            speed,
+                            dist
+                        )
+
+                        -- NPC sürücüyü sil
+                        if PROJECTILE_AUTO_DELETE then
+                            SetEntityAsMissionEntity(driver, false, true)
+                            DeletePed(driver)
+                            -- Aracı da sil
+                            SetEntityAsMissionEntity(vehicle, false, true)
+                            DeleteEntity(vehicle)
+                            deletedCount = deletedCount + 1
+                        end
+
+                    -- -----------------------------------------------
+                    --  Durum 3: NPC sürücü + yüksek hız (normal sunucu)
+                    --  NPC'ler normalde bu hıza ulaşamaz
+                    -- -----------------------------------------------
+                    elseif hasNPCDriver and speed > PROJECTILE_SPEED_THRESHOLD then
+                        local info = GetVehicleInfo(vehicle)
+
+                        detectedList[#detectedList + 1] = string.format(
+                            "%s [%s] hız:%.0f m/s (%.0f km/h) mesafe:%.1fm [NPC HIZLI]",
+                            info.displayName,
+                            info.plate,
+                            speed,
+                            speed * 3.6,
+                            dist
+                        )
+
+                        if PROJECTILE_AUTO_DELETE then
+                            SetEntityAsMissionEntity(driver, false, true)
+                            DeletePed(driver)
+                            SetEntityAsMissionEntity(vehicle, false, true)
+                            DeleteEntity(vehicle)
+                            deletedCount = deletedCount + 1
                         end
                     end
                 end

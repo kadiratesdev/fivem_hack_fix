@@ -468,6 +468,15 @@ Config.VehicleSpawnDetect = {
     -- --------------------------------------------------------
     MaxSpawnsServer = 5,
 
+    -- --------------------------------------------------------
+    -- NPC sürücüler kapalı mı?
+    -- Bazı sunucularda NPC trafik araçları tamamen kapalıdır.
+    -- Bu durumda NPC sürücülü bir araç görmek = hile imzası
+    -- true  = NPC sürücüler kapalı → NPC sürücülü araç = şüpheli → sil
+    -- false = NPC sürücüler açık → NPC trafik araçları normal (filtrele)
+    -- --------------------------------------------------------
+    NPCDriversDisabled = false,
+
     -- ============================================================
     --  Araç Mermisi / Şoförsüz Hızlı Araç Tespiti  v1.1.0
     --
