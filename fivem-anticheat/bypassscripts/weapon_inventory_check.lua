@@ -4,9 +4,9 @@
 --
 --  Mantık:
 --    1. Oyuncunun elindeki silahı al (GetSelectedPedWeapon)
---    2. exports.ox_inventory:Search('count', weaponName) ile
---       envanterde kaç adet olduğunu doğrudan client'ta sorgula
---    3. Eğer count == 0 → silahı al + sunucuya ban/kick bildir
+--    2. exports.ox_inventory:GetPlayerItems() ile tüm envanter
+--       itemlerini tek seferde al
+--    3. Silah item'ı envanterde yoksa → silahı al + sunucuya bildir
 --
 --  İstisnalar:
 --    - Config.WeaponCheck.IgnoredWeapons listesindeki silahlar görmezden gelinir
@@ -60,13 +60,17 @@ RegisterACModule("weapon_inventory_check", function()
         end
     end
 
-    -- ✅ ox_inventory client export ile doğrudan envanter kontrolü
-    -- Sunucuya gerek yok, client'ta anında sonuç alınır
-    local count = exports.ox_inventory:Search('count', weaponName)
+    -- ✅ ox_inventory:GetPlayerItems() ile tüm envanter itemlerini al
+    -- Tek bir export çağrısı ile tüm itemler gelir, sonra table lookup yaparız
+    local items = exports.ox_inventory:GetPlayerItems()
 
-    if count and count > 0 then
-        -- Silah envanterde mevcut, sorun yok
-        return
+    if items then
+        for _, item in pairs(items) do
+            if item.name and string.lower(item.name) == weaponName and item.count and item.count > 0 then
+                -- Silah envanterde mevcut, sorun yok
+                return
+            end
+        end
     end
 
     -- Silah envanterde YOK ama elde var → hile!
