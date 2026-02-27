@@ -7,10 +7,12 @@
 --  Tespit İmzaları:
 --  1. "anim@mp_rollarcoaster" animasyonu oynayan oyuncu
 --     (Bu animasyon normal oyunda hiçbir mekanizma tarafından tetiklenmez)
---  2. "anim@heists@box_carry@" animasyonu oynarken
---     oyuncuya attach edilmiş bir vehicle veya ped varlığı
---  3. Oyuncuya attach edilmiş bir vehicle (araç) tespiti
+--  2. Oyuncuya attach edilmiş bir vehicle (araç) tespiti
 --     (Normal oyunda araç oyuncuya attach edilemez)
+--
+--  NOT: Ped taşıma tespiti kasıtlı olarak çıkarıldı.
+--  Oyuncu normal gameplay'de başka bir pedi taşıyabilir
+--  (örn. yaralı taşıma senaryoları). Yanlış pozitif riski yüksek.
 -- ============================================================
 
 local MODULE_NAME = "EntityGrabCheat"
@@ -25,26 +27,14 @@ local detectionCount = 0
 
 -- -------------------------------------------------------
 -- Yardımcı: Oyuncuya attach edilmiş vehicle var mı?
+-- Normal GTA V / FiveM'de bir araç oyuncu ped'ine
+-- attach edilemez. Bu durum kesin hile imzasıdır.
 -- -------------------------------------------------------
 local function HasAttachedVehicle(ped)
     local pool = GetGamePool('CVehicle')
     for _, veh in ipairs(pool) do
         if IsEntityAttachedToEntity(veh, ped) then
             return true, veh
-        end
-    end
-    return false, nil
-end
-
--- -------------------------------------------------------
--- Yardımcı: Oyuncuya attach edilmiş ped var mı?
--- (Kendi ped'i hariç)
--- -------------------------------------------------------
-local function HasAttachedPed(playerPed)
-    local pool = GetGamePool('CPed')
-    for _, ped in ipairs(pool) do
-        if ped ~= playerPed and IsEntityAttachedToEntity(ped, playerPed) then
-            return true, ped
         end
     end
     return false, nil
@@ -63,28 +53,19 @@ Citizen.CreateThread(function()
 
         -- İmza 1: anim@mp_rollarcoaster animasyonu
         -- Bu animasyon yalnızca cheat script tarafından tetiklenir.
+        -- Normal GTA V / FiveM oynanışında hiçbir mekanizma bu animasyonu oynatmaz.
         if IsEntityPlayingAnim(playerPed, 'anim@mp_rollarcoaster', 'hands_up_idle_a_player_one', 3) then
             detected = true
             reason   = "Yasak animasyon: anim@mp_rollarcoaster (entity grab cheat)"
         end
 
-        -- İmza 2: anim@heists@box_carry@ oynarken attach edilmiş vehicle
+        -- İmza 2: Oyuncuya attach edilmiş araç (vehicle)
+        -- Normal oyunda bir araç oyuncu ped'ine attach edilemez.
         if not detected then
             local hasVeh, veh = HasAttachedVehicle(playerPed)
             if hasVeh then
                 detected = true
                 reason   = string.format("Oyuncuya attach edilmiş araç (entity: %d) - entity grab cheat", veh)
-            end
-        end
-
-        -- İmza 3: anim@heists@box_carry@ oynarken attach edilmiş ped
-        if not detected then
-            if IsEntityPlayingAnim(playerPed, 'anim@heists@box_carry@', 'idle', 3) then
-                local hasPed, attachedPed = HasAttachedPed(playerPed)
-                if hasPed then
-                    detected = true
-                    reason   = string.format("Oyuncuya attach edilmiş ped (entity: %d) - entity grab cheat", attachedPed)
-                end
             end
         end
 
