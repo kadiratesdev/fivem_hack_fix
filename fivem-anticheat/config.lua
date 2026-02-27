@@ -24,6 +24,7 @@ Config.Modules = {
     entity_grab             = true,  -- 7XCheat / MachoInject entity grab tespiti
     weapon_inventory_check  = true,  -- ox_inventory silah envanter kontrolü
     infinite_ammo_check     = true,  -- Sınırsız mermi (infinite ammo) tespiti
+    aimbot_detect           = true,  -- Aimbot / Silent Aim tespiti
     -- yeni modüller buraya eklenebilir
     -- mymod = true,
 }
@@ -233,4 +234,102 @@ Config.AmmoCheck = {
         -- "weapon_paintball",
         -- "weapon_stungun",
     },
+}
+
+-- ============================================================
+--  Aimbot / Silent Aim Tespiti (aimbot_detect modülü) v1.0.0
+-- ============================================================
+Config.AimbotDetect = {
+
+    -- --------------------------------------------------------
+    -- Hızlı döngü aralığı (milisaniye)
+    -- Ateş anlarını yakalamak için daha sık kontrol gerekir
+    -- 100ms = saniyede 10 kontrol
+    -- Düşük değer = daha hassas tespit, daha fazla CPU
+    -- --------------------------------------------------------
+    FastLoopMs = 100,
+
+    -- --------------------------------------------------------
+    -- Headshot oranı eşiği
+    -- Bu oranın üzerinde headshot yapan oyuncu → şüpheli
+    -- Normal oyuncu: %5-15, iyi oyuncu: %15-25
+    -- 0.40 = %40 headshot oranı → çok şüpheli
+    -- --------------------------------------------------------
+    HeadshotRatioThreshold = 0.40,
+
+    -- --------------------------------------------------------
+    -- Minimum ateş sayısı (analiz için)
+    -- Bu kadar ateş edilmeden headshot oranı kontrol edilmez
+    -- Düşük ateş sayısında oran yanıltıcı olabilir
+    -- --------------------------------------------------------
+    MinShotsForAnalysis = 15,
+
+    -- --------------------------------------------------------
+    -- Snap aiming: Hedef değişim süresi eşiği (milisaniye)
+    -- Bu süreden kısa sürede farklı bir hedefe geçiş → snap
+    -- 200ms = 0.2 saniye (insanüstü hızda hedef değişimi)
+    -- --------------------------------------------------------
+    SnapTimeThresholdMs = 200,
+
+    -- --------------------------------------------------------
+    -- Snap aiming: Minimum açı eşiği (derece)
+    -- Eski hedef ile yeni hedef arası bu açıdan büyükse
+    -- ve süre eşiğinden kısaysa → snap aiming
+    -- 30° = belirgin yön değişikliği
+    -- --------------------------------------------------------
+    SnapAngleThreshold = 30,
+
+    -- --------------------------------------------------------
+    -- Snap aiming: Kaç kez snap yapılırsa şüpheli?
+    -- Tek bir snap normal olabilir (fare hareketi)
+    -- Ama tekrarlayan snap'ler → aimbot
+    -- --------------------------------------------------------
+    SnapCountThreshold = 4,
+
+    -- --------------------------------------------------------
+    -- Ateş hızı: Pencere süresi (milisaniye)
+    -- Bu süre içindeki ateş sayısı kontrol edilir
+    -- 2000ms = 2 saniyelik pencere
+    -- --------------------------------------------------------
+    FireRateWindowMs = 2000,
+
+    -- --------------------------------------------------------
+    -- Ateş hızı: Maksimum ateş sayısı (pencere içinde)
+    -- Bu sayının üzerinde ateş → anormal hız
+    -- Çoğu silah saniyede 5-8 ateş eder
+    -- 2 saniyede 20 ateş = saniyede 10 = şüpheli
+    -- --------------------------------------------------------
+    FireRateMaxShots = 20,
+
+    -- --------------------------------------------------------
+    -- Strike sistemi: Maksimum strike puanı
+    -- Bu puana ulaşılırsa sunucuya rapor gönderilir
+    -- --------------------------------------------------------
+    MaxStrikes = 10,
+
+    -- --------------------------------------------------------
+    -- Strike sistemi: Sıfırlama süresi (milisaniye)
+    -- Bu süre içinde yeni strike gelmezse sayaç sıfırlanır
+    -- 60000 = 60 saniye
+    -- --------------------------------------------------------
+    StrikeResetMs = 60000,
+
+    -- --------------------------------------------------------
+    -- Strike ağırlıkları
+    -- Her tespit türü farklı puan verir
+    -- Daha kesin tespitler daha yüksek puan alır
+    -- --------------------------------------------------------
+    StrikeWeights = {
+        HighHeadshotRatio = 4,  -- Yüksek headshot oranı (en güvenilir)
+        SnapAiming        = 3,  -- Snap aiming tespiti
+        RapidFire         = 2,  -- Anormal ateş hızı
+    },
+
+    -- --------------------------------------------------------
+    -- İstatistik sıfırlama aralığı (milisaniye)
+    -- Uzun oturumlarda false positive önlemek için
+    -- istatistikler periyodik olarak yarıya indirilir
+    -- 300000 = 5 dakika
+    -- --------------------------------------------------------
+    StatResetIntervalMs = 300000,
 }
