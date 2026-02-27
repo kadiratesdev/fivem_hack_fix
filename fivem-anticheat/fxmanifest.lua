@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'AntiCheat System'
 description 'Modular FiveM AntiCheat - Bypass Script Detector'
-version '1.0.0'
+version '1.1.0'
 
 -- Shared config
 shared_scripts {
@@ -13,13 +13,18 @@ shared_scripts {
 -- Server-side scripts
 server_scripts {
     'server/server.lua',
+    'server/weapon_check_server.lua',  -- ox_inventory silah envanter kontrolü
 }
 
 -- Client-side scripts
 client_scripts {
     'client/loader.lua',
     'client/client.lua',
+    'client/weapon_check_client.lua',  -- Silah zorla kaldırma handler
     'bypassscripts/*.lua',
 }
+
+-- ox_inventory dependency
+dependency 'ox_inventory'
 
 lua54 'yes'

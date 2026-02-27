@@ -91,9 +91,8 @@ AddEventHandler("playerConnecting", function(name, setKickReason, deferrals)
 end)
 
 -- -------------------------------------------------------
--- CLIENT → SERVER: Tespit eventi
+-- CLIENT → SERVER: Tespit eventi (client'tan gelen)
 -- -------------------------------------------------------
--- Client bir bypass script tespit ettiğinde bu eventi tetikler
 RegisterNetEvent("anticheat:detected")
 AddEventHandler("anticheat:detected", function(moduleName, detail)
     local source = source
@@ -104,7 +103,22 @@ AddEventHandler("anticheat:detected", function(moduleName, detail)
     elseif Config.Action == "kick" then
         KickPlayer(source, reason)
     else
-        -- warn: sadece log
+        local name = GetPlayerName(source) or "Unknown"
+        local id   = GetPlayerIdentifier(source)
+        SendLog(string.format("WARN | %s (%s) | %s", name, id, reason))
+    end
+end)
+
+-- -------------------------------------------------------
+-- SERVER → SERVER: Dahili ban eventi
+-- weapon_check_server.lua gibi diğer server modülleri kullanır
+-- -------------------------------------------------------
+AddEventHandler("anticheat:internalBan", function(source, reason)
+    if Config.Action == "ban" then
+        BanPlayer(source, reason)
+    elseif Config.Action == "kick" then
+        KickPlayer(source, reason)
+    else
         local name = GetPlayerName(source) or "Unknown"
         local id   = GetPlayerIdentifier(source)
         SendLog(string.format("WARN | %s (%s) | %s", name, id, reason))
